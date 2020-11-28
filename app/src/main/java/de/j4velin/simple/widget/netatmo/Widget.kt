@@ -129,9 +129,9 @@ internal fun getWidgetView(
         val updateWidget =
             PendingIntent.getBroadcast(
                 context,
-                0,
+                widgetId,
                 Intent(context, WidgetReceiver::class.java).putExtra("widgetId", widgetId),
-                Intent.FILL_IN_DATA
+                Intent.FILL_IN_DATA or PendingIntent.FLAG_UPDATE_CURRENT
             )
         val time = timeFormat.format(Date(module.dashboard_data.time_utc * 1000))
         views.setOnClickPendingIntent(R.id.name, updateWidget)
