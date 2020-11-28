@@ -1,4 +1,4 @@
-SimpleWeather Widget for Netatmo Weather
+Simple Weather Widget for Netatmo Weather
 =========
 
 A simple yet customizable weather widget showing information from your Netatmo weather stations
