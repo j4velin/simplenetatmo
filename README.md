@@ -1,6 +1,3 @@
-# simplenetatmo
-A simple weather widget for the Netatmo weather station
-
 SimpleWeather Widget for Netatmo Weather
 =========
 
