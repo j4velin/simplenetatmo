@@ -1,0 +1,65 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+def apiProperties = new Properties()
+apiProperties.load(new FileInputStream(rootProject.file("local.properties")))
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
+
+    defaultConfig {
+        applicationId "de.j4velin.simple.widget.netatmo"
+        minSdkVersion 26
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+
+        buildConfigField("String", "clientId", apiProperties['api.id'])
+        buildConfigField("String", "clientSecret", apiProperties['api.secret'])
+    }
+
+    signingConfigs {
+        release
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        debug {
+            signingConfig signingConfigs.release
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+dependencies {
+    implementation 'com.github.j4velin.colorpicker:colorpicker:1.20.6'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'androidx.core:core-ktx:1.3.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.2-native-mt'
+    api "androidx.browser:browser:1.2.0" // needed for AppAuth
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0' // retrofit 2.9.0 uses OkHttp 3.14.9
+    implementation 'com.squareup.okhttp3:okhttp:3.14.9'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.14.9'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+}
+
+def keyProperties = new Properties()
+keyProperties.load(new FileInputStream(rootProject.file("key.properties")))
+android.signingConfigs.release.storeFile rootProject.file(keyProperties.keyStore)
+android.signingConfigs.release.storePassword keyProperties.keyStorePassword
+android.signingConfigs.release.keyAlias keyProperties.keyAlias
+android.signingConfigs.release.keyPassword keyProperties.keyAliasPassword

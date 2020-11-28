@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Simple Weather Widget</string>
+    <string name="setup_done">All set! You can now place the widget on your home screen!</string>
+    <string name="setup_need_auth">To access your Netatmo weather station and modules, the app needs authorization to read those data from your Netatmo account. Press the button below to open the Netatmo website and grant authorization.</string>
+    <string name="button_auth">Authorize application</string>
+    <string name="auth_error">Error on requesting authorization: %s</string>
+    <string name="data_error">Error on retrieving data: %s</string>
+    <string name="module">Module:</string>
+    <string name="auth_invalid_state">Invalid state in authResponse!</string>
+    <string name="auth_invalid_response">No valid authentication response received</string>
+    <string name="background_color">Background color:</string>
+    <string name="text_color">Text &amp; icon color:</string>
+    <string name="only_wifi">Only update while connected to WiFi</string>
+    <string name="global_settings">Global settings</string>
+    <string name="text_size">Text size:</string>
+    <string name="edit_widget">Edit existing widget:</string>
+    <string name="show_icons">Show icons</string>
+    <string name="no_module_selected">No module selected!</string>
+    <string name="show_temperature">Show temperature</string>
+    <string name="show_co2">Show CO2</string>
+    <string name="show_humidity">Show humidity</string>
+    <string name="show_name">Show module name &amp; update time</string>
+</resources>
