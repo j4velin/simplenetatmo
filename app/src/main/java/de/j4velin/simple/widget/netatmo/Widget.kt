@@ -68,10 +68,7 @@ private val timeFormat = SimpleDateFormat.getTimeInstance(DateFormat.SHORT)
 internal fun updateAllWidgets(
     context: Context, widgetManager: AppWidgetManager, widgetIds: IntArray, prefs: SharedPreferences
 ) {
-    val authorized = NetatmoWeatherApi.getApi(context, { error ->
-        Log.e(TAG, "Error getting API: $error")
-        // TODO: show error notification?
-    }) {
+    tryGetApi(context) {
         GlobalScope.launch {
             Log.d(TAG, "updating widgets ${widgetIds.asList()}")
             val data = it.getStations()
@@ -88,6 +85,31 @@ internal fun updateAllWidgets(
             }
         }
     }
+}
+
+internal fun updateWidget(context: Context, widgetId: Int) {
+    tryGetApi(context) {
+        GlobalScope.launch {
+            val data = it.getStations()
+            val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+            val moduleId = prefs.getString(widgetId.toString() + "_module_id", null)
+            val module = moduleId?.let { data.getModule(it) }
+            if (module != null) {
+                AppWidgetManager.getInstance(context).updateAppWidget(
+                    widgetId, getWidgetView(widgetId, context, module, prefs)
+                )
+            } else {
+                Log.e(TAG, "No module found for id=$moduleId, widget=$widgetId")
+            }
+        }
+    }
+}
+
+private fun tryGetApi(context: Context, action: (NetatmoWeatherApi) -> Unit) {
+    val authorized = NetatmoWeatherApi.getApi(context, { error ->
+        Log.e(TAG, "Error getting API: $error")
+        // TODO: show error notification?
+    }, action)
     if (!authorized) {
         Log.e(TAG, "Not authorized!")
         val nm = context.getSystemService(NotificationManager::class.java)
