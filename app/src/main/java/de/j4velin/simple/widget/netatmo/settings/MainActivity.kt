@@ -1,6 +1,8 @@
 package de.j4velin.simple.widget.netatmo.settings
 
 import android.app.Activity
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
@@ -15,6 +17,7 @@ import de.j4velin.simple.widget.netatmo.api.performAuthentication
 import kotlinx.android.synthetic.main.main.*
 import net.openid.appauth.AuthorizationService
 
+internal const val NOTIFICATION_CHANNEL_ERRORS = "errors"
 
 class MainActivity : Activity() {
 
@@ -24,6 +27,14 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main)
+
+        val nm = getSystemService(NotificationManager::class.java)
+        val channel = NotificationChannel(
+            NOTIFICATION_CHANNEL_ERRORS,
+            getString(R.string.channel_name_errors),
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        nm?.createNotificationChannel(channel)
     }
 
     override fun onResume() {

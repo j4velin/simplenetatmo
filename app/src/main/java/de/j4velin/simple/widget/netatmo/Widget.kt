@@ -1,5 +1,7 @@
 package de.j4velin.simple.widget.netatmo
 
+import android.app.Notification
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
@@ -13,9 +15,7 @@ import android.view.View
 import android.widget.RemoteViews
 import de.j4velin.simple.widget.netatmo.api.NetatmoWeatherApi
 import de.j4velin.simple.widget.netatmo.api.TAG
-import de.j4velin.simple.widget.netatmo.settings.DEFAULT_BG_COLOR
-import de.j4velin.simple.widget.netatmo.settings.DEFAULT_TEXT_COLOR
-import de.j4velin.simple.widget.netatmo.settings.DEFAULT_TEXT_SIZE
+import de.j4velin.simple.widget.netatmo.settings.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.text.DateFormat
@@ -24,10 +24,24 @@ import java.util.*
 
 class Widget : AppWidgetProvider() {
 
+    override fun onDeleted(context: Context?, widgetIds: IntArray?) {
+        super.onDeleted(context, widgetIds)
+        if (context != null && widgetIds != null) {
+            val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+            val edit = prefs.edit()
+            for (widgetId in widgetIds) {
+                for (key in prefs.all.keys) {
+                    if (key.startsWith(widgetId.toString() + "_")) {
+                        edit.remove(key)
+                    }
+                }
+            }
+            edit.apply()
+        }
+    }
+
     override fun onUpdate(
-        context: Context?,
-        widgetManager: AppWidgetManager?,
-        widgetIds: IntArray?
+        context: Context?, widgetManager: AppWidgetManager?, widgetIds: IntArray?
     ) {
         super.onUpdate(context, widgetManager, widgetIds)
         if (context != null && widgetManager != null && widgetIds != null) {
@@ -39,33 +53,9 @@ class Widget : AppWidgetProvider() {
                     ?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ?: true
                 if (!wifi) {
                     Log.i(TAG, "No WiFi connection -> don't update widgets")
-                    return
+                } else {
+                    updateAllWidgets(context, widgetManager, widgetIds, prefs)
                 }
-            }
-
-            val authorized = NetatmoWeatherApi.getApi(context, { error ->
-                Log.e(TAG, "Error getting API: $error")
-                // TODO: show error notification
-            }) {
-                GlobalScope.launch {
-                    Log.d(TAG, "updating widgets ${widgetIds.asList()}")
-                    val data = it.getStations()
-                    for (widgetId in widgetIds) {
-                        val moduleId = prefs.getString(widgetId.toString() + "_module_id", null)
-                        val module = moduleId?.let { data.getModule(it) }
-                        if (module != null) {
-                            widgetManager.updateAppWidget(
-                                widgetId, getWidgetView(widgetId, context, module, prefs)
-                            )
-                        } else {
-                            Log.e(TAG, "No module found for id=$moduleId, widget=$widgetId")
-                        }
-                    }
-                }
-            }
-            if (!authorized) {
-                Log.e(TAG, "Not authorized!")
-                // TODO: show error notification
             }
         } else {
             Log.e(TAG, "Parameter is null!")
@@ -75,34 +65,49 @@ class Widget : AppWidgetProvider() {
 
 private val timeFormat = SimpleDateFormat.getTimeInstance(DateFormat.SHORT)
 
-internal fun updateWidget(context: Context, widgetId: Int) {
-    val awm = AppWidgetManager.getInstance(context)
-    NetatmoWeatherApi.getApi(context, { error ->
+internal fun updateAllWidgets(
+    context: Context, widgetManager: AppWidgetManager, widgetIds: IntArray, prefs: SharedPreferences
+) {
+    val authorized = NetatmoWeatherApi.getApi(context, { error ->
         Log.e(TAG, "Error getting API: $error")
-        // TODO: show error notification
+        // TODO: show error notification?
     }) {
         GlobalScope.launch {
-            Log.d(TAG, "updating widget $widgetId on user request")
+            Log.d(TAG, "updating widgets ${widgetIds.asList()}")
             val data = it.getStations()
-            val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-            val moduleId = prefs.getString(widgetId.toString() + "_module_id", null)
-            val module = moduleId?.let { data.getModule(it) }
-            if (module != null) {
-                awm.updateAppWidget(
-                    widgetId, getWidgetView(widgetId, context, module, prefs)
-                )
-            } else {
-                Log.e(TAG, "No module found for id=$moduleId, widget=$widgetId")
+            for (widgetId in widgetIds) {
+                val moduleId = prefs.getString(widgetId.toString() + "_module_id", null)
+                val module = moduleId?.let { data.getModule(it) }
+                if (module != null) {
+                    widgetManager.updateAppWidget(
+                        widgetId, getWidgetView(widgetId, context, module, prefs)
+                    )
+                } else {
+                    Log.e(TAG, "No module found for id=$moduleId, widget=$widgetId")
+                }
             }
         }
+    }
+    if (!authorized) {
+        Log.e(TAG, "Not authorized!")
+        val nm = context.getSystemService(NotificationManager::class.java)
+        val notification =
+            Notification.Builder(context, NOTIFICATION_CHANNEL_ERRORS).setContentTitle(
+                context.getString(R.string.not_authorized)
+            ).setContentText(context.getString(R.string.not_authorized_long))
+                .setSmallIcon(R.mipmap.ic_launcher_round).setContentIntent(
+                    PendingIntent.getActivity(
+                        context, 1,
+                        Intent(context, MainActivity::class.java)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), 0
+                    )
+                ).setAutoCancel(true).build()
+        nm?.notify(1, notification)
     }
 }
 
 internal fun getWidgetView(
-    widgetId: Int,
-    context: Context,
-    module: NetatmoWeatherApi.Module,
-    prefs: SharedPreferences
+    widgetId: Int, context: Context, module: NetatmoWeatherApi.Module, prefs: SharedPreferences
 ): RemoteViews {
     val widget = widgetId.toString()
     Log.d(TAG, "update widget=$widget, module=$module")
@@ -130,7 +135,7 @@ internal fun getWidgetView(
             PendingIntent.getBroadcast(
                 context,
                 widgetId,
-                Intent(context, WidgetReceiver::class.java).putExtra("widgetId", widgetId),
+                Intent(context, WidgetReceiver::class.java).setAction(ACTION_UPDATE_WIDGETS),
                 Intent.FILL_IN_DATA or PendingIntent.FLAG_UPDATE_CURRENT
             )
         val time = timeFormat.format(Date(module.dashboard_data.time_utc * 1000))
