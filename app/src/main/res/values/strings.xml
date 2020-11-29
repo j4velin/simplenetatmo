@@ -9,7 +9,7 @@
     <string name="auth_invalid_state">Invalid state in authResponse!</string>
     <string name="auth_invalid_response">No valid authentication response received</string>
     <string name="background_color">Background color:</string>
-    <string name="text_color">Text &amp; icon color:</string>
+    <string name="text_color">Text color:</string>
     <string name="only_wifi">Only update while connected to WiFi</string>
     <string name="global_settings">Global settings</string>
     <string name="text_size">Text size:</string>
@@ -23,4 +23,10 @@
     <string name="channel_name_errors">Errors</string>
     <string name="not_authorized">No authorization</string>
     <string name="not_authorized_long">Not authorized to access Netatmo Weather data</string>
+    <string name="widget_type_last">Last measurement</string>
+    <string name="widget_type_graph">Measurements graph</string>
+    <string name="show_latest_values">Show latest values</string>
+    <string name="measurements">Measurements:</string>
+    <string name="time_between_measurements">Time between measurements:</string>
+    <string name="show_module_name">Show module name</string>
 </resources>

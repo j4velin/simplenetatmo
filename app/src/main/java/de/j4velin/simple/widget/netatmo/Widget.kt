@@ -17,6 +17,7 @@ import de.j4velin.simple.widget.netatmo.api.TAG
 import de.j4velin.simple.widget.netatmo.settings.DEFAULT_BG_COLOR
 import de.j4velin.simple.widget.netatmo.settings.DEFAULT_TEXT_COLOR
 import de.j4velin.simple.widget.netatmo.settings.DEFAULT_TEXT_SIZE
+import de.j4velin.simple.widget.netatmo.settings.WidgetConfig
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.text.DateFormat
@@ -28,7 +29,7 @@ class Widget : AppWidgetProvider() {
     override fun onDeleted(context: Context?, widgetIds: IntArray?) {
         super.onDeleted(context, widgetIds)
         if (context != null && widgetIds != null) {
-            val prefs = context.getSharedPreferences("widgets", Context.MODE_PRIVATE)
+            val prefs = context.getSharedPreferences(WidgetConfig.PREF_NAME, Context.MODE_PRIVATE)
             val edit = prefs.edit()
             for (widgetId in widgetIds) {
                 for (key in prefs.all.keys) {
@@ -73,7 +74,8 @@ class Widget : AppWidgetProvider() {
                 GlobalScope.launch {
                     Log.d(TAG, "updating widgets ${widgetIds.asList()}")
                     val data = it.getStations()
-                    val prefs = context.getSharedPreferences("widgets", Context.MODE_PRIVATE)
+                    val prefs =
+                        context.getSharedPreferences(WidgetConfig.PREF_NAME, Context.MODE_PRIVATE)
                     for (widgetId in widgetIds) {
                         val moduleId = prefs.getString(widgetId.toString() + "_module_id", null)
                         val module = moduleId?.let { data.getModule(it) }
@@ -93,7 +95,8 @@ class Widget : AppWidgetProvider() {
             tryGetApi(context) {
                 GlobalScope.launch {
                     val data = it.getStations()
-                    val prefs = context.getSharedPreferences("widgets", Context.MODE_PRIVATE)
+                    val prefs =
+                        context.getSharedPreferences(WidgetConfig.PREF_NAME, Context.MODE_PRIVATE)
                     val moduleId = prefs.getString(widgetId.toString() + "_module_id", null)
                     val module = moduleId?.let { data.getModule(it) }
                     if (module != null) {

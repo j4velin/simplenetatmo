@@ -14,14 +14,28 @@
         android:theme="@style/AppTheme">
         <receiver
             android:name=".Widget"
-            android:label="@string/app_name">
+            android:label="@string/widget_type_last">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
             </intent-filter>
 
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget" />
+        </receiver>
+        <receiver
+            android:name=".GraphWidget"
+            android:label="@string/widget_type_graph">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE_OPTIONS" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/graph_widget" />
         </receiver>
 
         <activity
@@ -34,6 +48,14 @@
         </activity>
         <activity
             android:name=".settings.WidgetConfig"
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="stateHidden">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".settings.GraphWidgetConfig"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>

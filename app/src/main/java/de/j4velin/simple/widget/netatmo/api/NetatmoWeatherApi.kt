@@ -16,7 +16,8 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
-import retrofit2.http.Path
+import retrofit2.http.Query
+
 
 const val TAG = "SimpleNetatmo"
 
@@ -91,13 +92,16 @@ interface NetatmoWeatherApi {
         }
 
         private fun getApiWithToken(token: String): NetatmoWeatherApi {
-            val okhttp = OkHttpClient.Builder().addInterceptor { chain ->
-                chain.proceed(
-                    chain.request().newBuilder()
-                        .addHeader("Authorization", "Bearer $token")
-                        .build()
-                )
-            }.build()
+            // val logging = HttpLoggingInterceptor()
+            // logging.level = HttpLoggingInterceptor.Level.BODY
+            val okhttp = OkHttpClient.Builder()//.addInterceptor(logging)
+                .addInterceptor { chain ->
+                    chain.proceed(
+                        chain.request().newBuilder()
+                            .addHeader("Authorization", "Bearer $token")
+                            .build()
+                    )
+                }.build()
             val retrofit = Retrofit.Builder()
                 .baseUrl("https://api.netatmo.com/api/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -110,7 +114,10 @@ interface NetatmoWeatherApi {
     @GET("getstationsdata")
     suspend fun getStations(): StationResponse
 
-    data class StationResponse(val body: StationBody, val status: String) {
+    data class ErrorResponse(val message: String, val code: Int)
+    data class StationResponse(
+        val body: StationBody, val status: String, val error: ErrorResponse
+    ) {
         fun getModule(id: String): Module? =
             body.devices.flatMap { s -> s.allModules }.find { r -> r._id == id }
     }
@@ -119,7 +126,7 @@ interface NetatmoWeatherApi {
     data class Station(
         val home_name: String,
         val modules: List<Module>,
-        private val _id: String,
+        val _id: String,
         private val module_name: String,
         private val data_type: List<String>,
         private val dashboard_data: Data
@@ -139,17 +146,18 @@ interface NetatmoWeatherApi {
     data class UserSettings(val unit: Int, val windunit: Int, val pressureunit: Int)
     data class Data(val Temperature: Float, val CO2: Int, val Humidity: Int, val time_utc: Long)
 
-    @GET("getmeasure?device_id={station}&module_id={module}&scale={scale}min&type={types}&limit={limit}")
+    @GET("getmeasure?optimize=true")
     suspend fun getMeasurements(
-        @Path("station") station_id: String,
-        @Path("module") module_id: String,
-        @Path("scale") scale: Int,
-        @Path("types") types: List<String>,
-        @Path("limit") limit: Int
+        @Query("device_id") station_id: String,
+        @Query("module_id") module_id: String,
+        @Query("scale") scale: String,
+        @Query("type") types: String,
+        @Query("date_begin") date_begin: Int
     ): MeasurementsResponse
 
-    data class MeasurementsResponse(val body: MeasurementsBody, val status: String)
-    data class MeasurementsBody(val modules: List<Measurements>)
-    data class Measurements(val value: List<Measurement>)
-    data class Measurement(val values: List<Number>)
+    data class MeasurementsResponse(
+        val body: List<Measurements>, val status: String, val error: ErrorResponse
+    )
+
+    data class Measurements(val value: List<List<Number>>)
 }

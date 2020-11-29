@@ -10,6 +10,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
+import de.j4velin.simple.widget.netatmo.GraphWidget
 import de.j4velin.simple.widget.netatmo.R
 import de.j4velin.simple.widget.netatmo.Widget
 import de.j4velin.simple.widget.netatmo.api.getAuthState
@@ -23,6 +24,7 @@ class MainActivity : Activity() {
 
     private val service by lazy { AuthorizationService(this) }
     private lateinit var widgetIds: IntArray
+    private lateinit var graphWidgetIds: IntArray
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,16 +44,24 @@ class MainActivity : Activity() {
         if (getAuthState(this).isAuthorized) {
             text.text = getString(R.string.setup_done)
             authbutton.visibility = View.GONE
-            val prefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
+            val widgetPrefs = getSharedPreferences("widgets", Context.MODE_PRIVATE)
+            val graphPrefs = getSharedPreferences("graphwidgets", Context.MODE_PRIVATE)
             val awm = AppWidgetManager.getInstance(this)
             widgetIds = awm.getAppWidgetIds(ComponentName(this, Widget::class.java))
-            val adapter = ArrayAdapter(
-                this,
-                android.R.layout.simple_spinner_dropdown_item,
-                widgetIds.map { "#$it - ${prefs.getString(it.toString() + "_name", "")}" }
-            )
+            graphWidgetIds = awm.getAppWidgetIds(ComponentName(this, GraphWidget::class.java))
+            val widgetsNames =
+                widgetIds.map { "#$it - ${widgetPrefs.getString(it.toString() + "_name", "")}" }
+            val graphWidgetsNames = graphWidgetIds.map {
+                "#$it - ${graphPrefs.getString(it.toString() + "_name", "")}"
+            }
+            val adapter =
+                ArrayAdapter(
+                    this, android.R.layout.simple_spinner_dropdown_item,
+                    widgetsNames + graphWidgetsNames
+                )
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             editwidgets.adapter = adapter
+            editbutton.isEnabled = !widgetIds.isEmpty()
 
         } else {
             text.text =
@@ -68,10 +78,19 @@ class MainActivity : Activity() {
 
     fun startAuthFlow(view: View) = performAuthentication(this, service)
 
-    fun editWidget(view: View) = startActivity(
-        Intent(this, WidgetConfig::class.java).putExtra(
-            "editId",
-            widgetIds[editwidgets.selectedItemPosition]
-        )
-    )
+    fun editWidget(view: View) {
+        if (editwidgets.selectedItemPosition >= widgetIds.size) {
+            startActivity(
+                Intent(this, GraphWidgetConfig::class.java).putExtra(
+                    "editId", graphWidgetIds[editwidgets.selectedItemPosition - widgetIds.size]
+                )
+            )
+        } else {
+            startActivity(
+                Intent(this, WidgetConfig::class.java).putExtra(
+                    "editId", widgetIds[editwidgets.selectedItemPosition]
+                )
+            )
+        }
+    }
 }
