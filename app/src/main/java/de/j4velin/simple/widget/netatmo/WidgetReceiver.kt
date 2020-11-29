@@ -12,9 +12,8 @@ class WidgetReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context != null && intent?.action?.equals(ACTION_UPDATE_WIDGETS) == true) {
             val awm = AppWidgetManager.getInstance(context)
-            updateAllWidgets(
-                context, awm, awm.getAppWidgetIds(ComponentName(context, Widget::class.java)),
-                context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+            Widget.updateAllWidgets(
+                context, awm, awm.getAppWidgetIds(ComponentName(context, Widget::class.java))
             )
         }
     }

@@ -1,7 +1,14 @@
 package de.j4velin.simple.widget.netatmo.api
 
+import android.app.Notification
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.util.Log
+import de.j4velin.simple.widget.netatmo.R
+import de.j4velin.simple.widget.netatmo.settings.MainActivity
+import de.j4velin.simple.widget.netatmo.settings.NOTIFICATION_CHANNEL_ERRORS
 import net.openid.appauth.AuthState
 import net.openid.appauth.AuthorizationService
 import net.openid.appauth.ClientSecretPost
@@ -9,15 +16,18 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Path
 
 const val TAG = "SimpleNetatmo"
 
 interface NetatmoWeatherApi {
 
     companion object {
-        fun getApi(
-            context: Context,
-            onError: (String) -> Unit,
+        /**
+         * Gets the api
+         */
+        internal fun getApi(
+            context: Context, onError: (String) -> Unit,
             onSuccess: (NetatmoWeatherApi) -> Unit
         ): Boolean {
             val service = AuthorizationService(context, false)
@@ -37,11 +47,35 @@ interface NetatmoWeatherApi {
             }
         }
 
+        /**
+         * Gets the api or shows any error notification, if not authenticated
+         */
+        internal fun tryGetApi(context: Context, action: (NetatmoWeatherApi) -> Unit) {
+            val authorized = getApi(context, { error ->
+                Log.e(TAG, "Error getting API: $error")
+                // TODO: also show error notification?
+            }, action)
+            if (!authorized) {
+                Log.e(TAG, "Not authorized!")
+                val nm = context.getSystemService(NotificationManager::class.java)
+                val notification =
+                    Notification.Builder(context, NOTIFICATION_CHANNEL_ERRORS).setContentTitle(
+                        context.getString(R.string.not_authorized)
+                    ).setContentText(context.getString(R.string.not_authorized_long))
+                        .setSmallIcon(R.mipmap.ic_launcher_round).setContentIntent(
+                            PendingIntent.getActivity(
+                                context, 1,
+                                Intent(context, MainActivity::class.java)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), 0
+                            )
+                        ).setAutoCancel(true).build()
+                nm?.notify(1, notification)
+            }
+        }
+
         private fun getTokenAndApi(
-            authState: AuthState,
-            service: AuthorizationService,
-            onError: (String) -> Unit,
-            onSuccess: (NetatmoWeatherApi) -> Unit
+            authState: AuthState, service: AuthorizationService,
+            onError: (String) -> Unit, onSuccess: (NetatmoWeatherApi) -> Unit
         ) {
             authState.performActionWithFreshTokens(service, ClientSecretPost(CLIENT_SECRET))
             { accessToken, _, exception ->
@@ -73,7 +107,7 @@ interface NetatmoWeatherApi {
         }
     }
 
-    @GET("getstationsdata?get_favorites=false")
+    @GET("getstationsdata")
     suspend fun getStations(): StationResponse
 
     data class StationResponse(val body: StationBody, val status: String) {
@@ -90,25 +124,32 @@ interface NetatmoWeatherApi {
         private val data_type: List<String>,
         private val dashboard_data: Data
     ) {
-        val stationModule
-            get() = Module(
-                _id,
-                module_name,
-                data_type,
-                dashboard_data
-            )
+        private val stationModule
+            get() = Module(_id, module_name, data_type, dashboard_data)
         val allModules
             get() = modules + stationModule
     }
 
     data class Module(
-        val _id: String,
-        val module_name: String,
-        val data_type: List<String>,
+        val _id: String, val module_name: String, val data_type: List<String>,
         val dashboard_data: Data
     )
 
     data class User(val administrative: UserSettings)
     data class UserSettings(val unit: Int, val windunit: Int, val pressureunit: Int)
     data class Data(val Temperature: Float, val CO2: Int, val Humidity: Int, val time_utc: Long)
+
+    @GET("getmeasure?device_id={station}&module_id={module}&scale={scale}min&type={types}&limit={limit}")
+    suspend fun getMeasurements(
+        @Path("station") station_id: String,
+        @Path("module") module_id: String,
+        @Path("scale") scale: Int,
+        @Path("types") types: List<String>,
+        @Path("limit") limit: Int
+    ): MeasurementsResponse
+
+    data class MeasurementsResponse(val body: MeasurementsBody, val status: String)
+    data class MeasurementsBody(val modules: List<Measurements>)
+    data class Measurements(val value: List<Measurement>)
+    data class Measurement(val values: List<Number>)
 }

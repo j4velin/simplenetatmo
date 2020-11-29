@@ -16,9 +16,9 @@ import android.widget.Toast
 import de.j4velin.lib.colorpicker.ColorPickerDialog
 import de.j4velin.lib.colorpicker.ColorPreviewButton
 import de.j4velin.simple.widget.netatmo.R
+import de.j4velin.simple.widget.netatmo.Widget
 import de.j4velin.simple.widget.netatmo.api.NetatmoWeatherApi
 import de.j4velin.simple.widget.netatmo.api.TAG
-import de.j4velin.simple.widget.netatmo.updateWidget
 import kotlinx.android.synthetic.main.widget_config.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -46,7 +46,7 @@ class WidgetConfig : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        prefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        prefs = getSharedPreferences("widgets", Context.MODE_PRIVATE)
         setResult(RESULT_CANCELED)
         val extras = intent.extras
         if (extras != null) {
@@ -65,12 +65,14 @@ class WidgetConfig : Activity() {
         }
         setContentView(R.layout.widget_config)
 
+        onlywifi.isChecked =
+            getSharedPreferences("settings", Context.MODE_PRIVATE).getBoolean("only_wifi", true)
+
         background_color.setOnClickListener(colorClickListener)
         background_color.color = prefs.getInt(widgetId + "_background_color", DEFAULT_BG_COLOR)
         text_color.setOnClickListener(colorClickListener)
         text_color.color = prefs.getInt(widgetId + "_text_color", DEFAULT_TEXT_COLOR)
         text_size.setText(prefs.getFloat(widgetId + "_text_size", DEFAULT_TEXT_SIZE).toString())
-        onlywifi.isChecked = prefs.getBoolean("only_wifi", true)
         show_icons.isChecked = prefs.getBoolean(widgetId + "_show_icons", true)
         show_name.isChecked = prefs.getBoolean(widgetId + "_show_name", true)
         show_temperature.isChecked = prefs.getBoolean(widgetId + "_show_temperature", true)
@@ -143,6 +145,9 @@ class WidgetConfig : Activity() {
     }
 
     fun save(view: View) {
+        getSharedPreferences("settings", Context.MODE_PRIVATE).edit()
+            .putBoolean("only_wifi", onlywifi.isChecked).apply()
+
         val edit = prefs.edit()
         if (selectedModule == null) {
             Toast.makeText(this, R.string.no_module_selected, Toast.LENGTH_LONG).show()
@@ -160,7 +165,6 @@ class WidgetConfig : Activity() {
         } catch (nfe: NumberFormatException) {
             Log.e(TAG, "Given text.size value is not a number: $nfe", nfe)
         }
-        edit.putBoolean("only_wifi", onlywifi.isChecked)
         edit.putBoolean(widgetId + "_show_icons", show_icons.isChecked)
         edit.putBoolean(widgetId + "_show_name", show_name.isChecked)
         edit.putBoolean(widgetId + "_show_temperature", show_temperature.isChecked)
@@ -172,7 +176,7 @@ class WidgetConfig : Activity() {
         val resultValue = Intent()
         resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId.toInt())
         setResult(RESULT_OK, resultValue)
-        updateWidget(this, widgetId.toInt())
+        Widget.updateWidget(this, widgetId.toInt())
         finish()
     }
 }
