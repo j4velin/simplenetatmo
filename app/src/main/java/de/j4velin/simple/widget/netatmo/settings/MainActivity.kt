@@ -1,6 +1,7 @@
 package de.j4velin.simple.widget.netatmo.settings
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.appwidget.AppWidgetManager
@@ -19,6 +20,13 @@ import kotlinx.android.synthetic.main.main.*
 import net.openid.appauth.AuthorizationService
 
 internal const val NOTIFICATION_CHANNEL_ERRORS = "errors"
+
+internal fun showErrorDialog(activity: Activity, msg: String) {
+    AlertDialog.Builder(activity)
+        .setMessage(msg)
+        .setPositiveButton(android.R.string.cancel) { dialog, _ -> dialog.cancel() }
+        .setOnCancelListener { activity.finish() }.create().show()
+}
 
 class MainActivity : Activity() {
 

@@ -28,5 +28,5 @@
     <string name="show_latest_values">Show latest values</string>
     <string name="measurements">Measurements:</string>
     <string name="time_between_measurements">Time between measurements:</string>
-    <string name="show_module_name">Show module name</string>
+    <string name="no_stations">Could not find any Netatmo Weather stations associated with your account</string>
 </resources>

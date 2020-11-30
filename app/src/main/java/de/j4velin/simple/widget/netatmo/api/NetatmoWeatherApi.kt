@@ -63,14 +63,14 @@ interface NetatmoWeatherApi {
                     Notification.Builder(context, NOTIFICATION_CHANNEL_ERRORS).setContentTitle(
                         context.getString(R.string.not_authorized)
                     ).setContentText(context.getString(R.string.not_authorized_long))
-                        .setSmallIcon(R.mipmap.ic_launcher_round).setContentIntent(
+                        .setSmallIcon(R.drawable.ic_notification).setContentIntent(
                             PendingIntent.getActivity(
                                 context, 1,
                                 Intent(context, MainActivity::class.java)
                                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), 0
                             )
                         ).setAutoCancel(true).build()
-                nm?.notify(1, notification)
+                nm?.notify(System.currentTimeMillis().toInt(), notification)
             }
         }
 

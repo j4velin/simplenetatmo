@@ -2,12 +2,9 @@ package de.j4velin.simple.widget.netatmo
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
-import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -21,77 +18,19 @@ import de.j4velin.simple.widget.netatmo.api.TAG
 import de.j4velin.simple.widget.netatmo.settings.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.util.*
 
+class GraphWidget : AbstractWidget(GraphWidgetConfig.PREF_NAME) {
 
-class GraphWidget : AppWidgetProvider() {
-
-    override fun onDeleted(context: Context?, widgetIds: IntArray?) {
-        super.onDeleted(context, widgetIds)
-        if (context != null && widgetIds != null) {
-            val prefs =
-                context.getSharedPreferences(GraphWidgetConfig.PREF_NAME, Context.MODE_PRIVATE)
-            val edit = prefs.edit()
-            for (widgetId in widgetIds) {
-                for (key in prefs.all.keys) {
-                    if (key.startsWith(widgetId.toString() + "_")) {
-                        edit.remove(key)
-                    }
-                }
-            }
-            edit.apply()
-        }
-    }
-
-    /*
-    override fun onAppWidgetOptionsChanged(
-        context: Context?,
-        appWidgetManager: AppWidgetManager?,
-        appWidgetId: Int,
-        newOptions: Bundle?
+    override fun updateAllWidgets(
+        context: Context, widgetManager: AppWidgetManager, widgetIds: IntArray
     ) {
-        super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
-        if (context != null) {
-            val awm = AppWidgetManager.getInstance(context)
-            awm.updateAppWidget(
-                appWidgetId,
-                getWidgetView(
-                    appWidgetId,
-                    context,
-                    null,
-                    context.getSharedPreferences("graphwidgets", Context.MODE_PRIVATE),
-                    awm
-                )
-            )
-        }
-    }
-    */
-
-    override fun onUpdate(
-        context: Context?, widgetManager: AppWidgetManager?, widgetIds: IntArray?
-    ) {
-        super.onUpdate(context, widgetManager, widgetIds)
-        if (context != null && widgetManager != null && widgetIds != null) {
-            val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-            if (prefs.getBoolean("only_wifi", true)) {
-                val connManager =
-                    context.applicationContext.getSystemService(ConnectivityManager::class.java)
-                val wifi = connManager?.getNetworkCapabilities(connManager.activeNetwork)
-                    ?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ?: true
-                if (!wifi) {
-                    Log.i(TAG, "No WiFi connection -> don't update widgets")
-                } else {
-                    for (widgetId in widgetIds) {
-                        updateWidget(context, widgetId)
-                    }
-                }
-            }
-        } else {
-            Log.e(TAG, "Parameter is null!")
+        for (widgetId in widgetIds) {
+            updateWidget(context, widgetId)
         }
     }
 
     companion object {
-
         internal fun updateWidget(context: Context, widgetId: Int) {
             tryGetApi(context) {
                 GlobalScope.launch {
@@ -160,11 +99,15 @@ class GraphWidget : AppWidgetProvider() {
                     PendingIntent.getBroadcast(
                         context, widgetId,
                         Intent(context, WidgetReceiver::class.java)
-                            .setAction(ACTION_UPDATE_WIDGETS),
+                            .setAction(ACTION_UPDATE_GRAPH_WIDGET)
+                            .putExtra(EXTRA_KEY_WIDGET_ID, widgetId),
                         Intent.FILL_IN_DATA or PendingIntent.FLAG_UPDATE_CURRENT
                     )
                 views.setOnClickPendingIntent(R.id.name, updateWidget)
-                views.setTextViewText(R.id.name, prefs.getString(widget + "_name", ""))
+                views.setTextViewText(
+                    R.id.name,
+                    "${prefs.getString(widget + "_name", "")} - ${timeFormat.format(Date())}"
+                )
                 views.setTextColor(
                     R.id.name, prefs.getInt(widget + "_text_color", DEFAULT_TEXT_COLOR)
                 )

@@ -1,7 +1,6 @@
 package de.j4velin.simple.widget.netatmo.settings
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import de.j4velin.simple.widget.netatmo.R
@@ -30,36 +29,31 @@ class AuthResponseActivity : Activity() {
                         authState,
                         service,
                         authResponse,
-                        this::showErrorDialog,
+                        { error ->
+                            showErrorDialog(this, getString(R.string.auth_error, error))
+                        },
                         this::finish
                     )
                 } else {
                     val errorMsg = getString(R.string.auth_invalid_state)
                     Log.e(TAG, errorMsg)
-                    showErrorDialog(errorMsg)
+                    showErrorDialog(this, getString(R.string.auth_error, errorMsg))
                 }
             }
             if (authException != null) {
                 val errorMsg = authException.error ?: authException.toJsonString()
                 Log.e(TAG, errorMsg, authException)
-                showErrorDialog(errorMsg)
+                showErrorDialog(this, getString(R.string.auth_error, errorMsg))
             }
         } else {
             val errorMsg = getString(R.string.auth_invalid_response)
             Log.e(TAG, errorMsg, authException)
-            showErrorDialog(errorMsg)
+            showErrorDialog(this, getString(R.string.auth_error, errorMsg))
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         service.dispose()
-    }
-
-    private fun showErrorDialog(msg: String) {
-        AlertDialog.Builder(this)
-            .setMessage(getString(R.string.auth_error, msg))
-            .setPositiveButton(android.R.string.ok) { dialog, _ -> dialog.cancel() }
-            .setOnCancelListener { finish() }.create().show()
     }
 }

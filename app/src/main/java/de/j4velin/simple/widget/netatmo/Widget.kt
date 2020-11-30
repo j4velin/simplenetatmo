@@ -2,12 +2,9 @@ package de.j4velin.simple.widget.netatmo
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
-import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
@@ -20,53 +17,15 @@ import de.j4velin.simple.widget.netatmo.settings.DEFAULT_TEXT_SIZE
 import de.j4velin.simple.widget.netatmo.settings.WidgetConfig
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.util.*
 
-class Widget : AppWidgetProvider() {
+class Widget : AbstractWidget(WidgetConfig.PREF_NAME) {
 
-    override fun onDeleted(context: Context?, widgetIds: IntArray?) {
-        super.onDeleted(context, widgetIds)
-        if (context != null && widgetIds != null) {
-            val prefs = context.getSharedPreferences(WidgetConfig.PREF_NAME, Context.MODE_PRIVATE)
-            val edit = prefs.edit()
-            for (widgetId in widgetIds) {
-                for (key in prefs.all.keys) {
-                    if (key.startsWith(widgetId.toString() + "_")) {
-                        edit.remove(key)
-                    }
-                }
-            }
-            edit.apply()
-        }
-    }
-
-    override fun onUpdate(
-        context: Context?, widgetManager: AppWidgetManager?, widgetIds: IntArray?
-    ) {
-        super.onUpdate(context, widgetManager, widgetIds)
-        if (context != null && widgetManager != null && widgetIds != null) {
-            val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-            if (prefs.getBoolean("only_wifi", true)) {
-                val connManager =
-                    context.applicationContext.getSystemService(ConnectivityManager::class.java)
-                val wifi = connManager?.getNetworkCapabilities(connManager.activeNetwork)
-                    ?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ?: true
-                if (!wifi) {
-                    Log.i(TAG, "No WiFi connection -> don't update widgets")
-                } else {
-                    updateAllWidgets(context, widgetManager, widgetIds)
-                }
-            }
-        } else {
-            Log.e(TAG, "Parameter is null!")
-        }
-    }
+    override fun updateAllWidgets(
+        context: Context, widgetManager: AppWidgetManager, widgetIds: IntArray
+    ) = Widget.updateAllWidgets(context, widgetManager, widgetIds)
 
     companion object {
-        private val timeFormat = SimpleDateFormat.getTimeInstance(DateFormat.SHORT)
-
         internal fun updateAllWidgets(
             context: Context, widgetManager: AppWidgetManager, widgetIds: IntArray
         ) {

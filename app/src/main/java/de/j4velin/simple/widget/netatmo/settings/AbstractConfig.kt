@@ -83,6 +83,10 @@ abstract class AbstractConfig(private val prefName: String) : Activity() {
     }
 
     private fun dataReceived(data: NetatmoWeatherApi.StationResponse) {
+        if (data.body.devices.isEmpty()) {
+            showErrorDialog(this, getString(R.string.no_stations))
+            return
+        }
         val moduleList = mutableListOf<NetatmoWeatherApi.Module>()
         val moduleNameList = mutableListOf<String>()
         for (station in data.body.devices) {
