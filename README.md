@@ -5,10 +5,9 @@ A simple yet customizable weather widget showing information from your Netatmo w
 
 <table sytle="border: 0px;">
 <tr>
-<td><img width="150px" src="screenshot1.png" /></td>
-<td><img width="150px" src="screenshot2.png" /></td>
-<td><img width="150px" src="screenshot3.png" /></td>
-<td><img width="150px" src="screenshot4.png" /></td>
+<td><img width="200px" src="screenshot1.png" /></td>
+<td><img width="200px" src="screenshot2.png" /></td>
+<td><img width="200px" src="screenshot3.png" /></td>
 </tr>
 </table>
 
