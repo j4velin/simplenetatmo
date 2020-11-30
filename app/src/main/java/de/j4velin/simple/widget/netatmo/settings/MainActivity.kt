@@ -40,9 +40,8 @@ class MainActivity : Activity() {
 
         val nm = getSystemService(NotificationManager::class.java)
         val channel = NotificationChannel(
-            NOTIFICATION_CHANNEL_ERRORS,
-            getString(R.string.channel_name_errors),
-            NotificationManager.IMPORTANCE_DEFAULT
+            NOTIFICATION_CHANNEL_ERRORS, getString(R.string.channel_name_errors),
+            NotificationManager.IMPORTANCE_LOW
         )
         nm?.createNotificationChannel(channel)
     }
@@ -72,8 +71,7 @@ class MainActivity : Activity() {
             editbutton.isEnabled = !widgetIds.isEmpty()
 
         } else {
-            text.text =
-                getString(R.string.setup_need_auth)
+            text.text = getString(R.string.setup_need_auth)
             authbutton.visibility = View.VISIBLE
             editlayout.visibility = View.GONE
         }
