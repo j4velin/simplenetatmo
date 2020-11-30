@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Simple Weather Widget</string>
     <string name="setup_done">All set! You can now place the widget on your home screen!</string>
     <string name="setup_need_auth">To access your Netatmo weather station and modules, the app needs authorization to read those data from your Netatmo account. Press the button below to open the Netatmo website and grant authorization.</string>
     <string name="button_auth">Authorize application</string>
@@ -25,8 +24,16 @@
     <string name="not_authorized_long">Not authorized to access Netatmo Weather data</string>
     <string name="widget_type_last">Last measurement</string>
     <string name="widget_type_graph">Measurements graph</string>
-    <string name="show_latest_values">Show latest values</string>
     <string name="measurements">Measurements:</string>
     <string name="time_between_measurements">Time between measurements:</string>
     <string name="no_stations">Could not find any Netatmo Weather stations associated with your account</string>
+    <string name="show_values">Show values:</string>
+    <string-array name="graphwidget_value_types">
+        <item>no values</item>
+        <item>latest</item>
+        <item>first &amp; latest</item>
+        <item>min &amp; max</item>
+        <item>latest &amp; min, max</item>
+        <item>first, latest &amp; min, max</item>
+    </string-array>
 </resources>

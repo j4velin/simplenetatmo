@@ -108,6 +108,7 @@
                     android:id="@+id/text_size"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:ems="2"
                     android:inputType="numberDecimal" />
             </TableRow>
 
@@ -122,10 +123,13 @@
                     android:id="@+id/limit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:ems="2"
                     android:inputType="number" />
             </TableRow>
 
-            <TableRow android:gravity="center_vertical">
+            <TableRow
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -137,6 +141,22 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
             </TableRow>
+
+            <TableRow
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/show_values" />
+
+                <Spinner
+                    android:id="@+id/valuespinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/graphwidget_value_types" />
+            </TableRow>
         </TableLayout>
 
         <CheckBox
@@ -145,12 +165,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:text="@string/show_name" />
-
-        <CheckBox
-            android:id="@+id/show_latest"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/show_latest_values" />
 
         <TextView
             style="?android:attr/listSeparatorTextViewStyle"

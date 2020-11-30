@@ -34,11 +34,11 @@ interface NetatmoWeatherApi {
             val service = AuthorizationService(context, false)
             val authState = getAuthState(context)
             return if (authState.isAuthorized) {
-                getTokenAndApi(authState, service, { error: String ->
-                    onError(error)
+                getTokenAndApi(authState, service, {
+                    onError(it)
                     service.dispose()
-                }) { api: NetatmoWeatherApi ->
-                    onSuccess(api)
+                }) {
+                    onSuccess(it)
                     service.dispose()
                 }
                 true
@@ -52,9 +52,8 @@ interface NetatmoWeatherApi {
          * Gets the api or shows any error notification, if not authenticated
          */
         internal fun tryGetApi(context: Context, action: (NetatmoWeatherApi) -> Unit) {
-            val authorized = getApi(context, { error ->
-                Log.e(TAG, "Error getting API: $error")
-                // TODO: also show error notification?
+            val authorized = getApi(context, {
+                Log.e(TAG, "Error getting API: $it")
             }, action)
             if (!authorized) {
                 Log.e(TAG, "Not authorized!")
@@ -119,7 +118,7 @@ interface NetatmoWeatherApi {
         val body: StationBody, val status: String, val error: ErrorResponse
     ) {
         fun getModule(id: String): Module? =
-            body.devices.flatMap { s -> s.allModules }.find { r -> r._id == id }
+            body.devices.flatMap { s -> s.allModules }.find { it._id == id }
     }
 
     data class StationBody(val devices: List<Station>, val user: User)

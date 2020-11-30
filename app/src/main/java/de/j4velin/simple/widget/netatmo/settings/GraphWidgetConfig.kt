@@ -1,5 +1,6 @@
 package de.j4velin.simple.widget.netatmo.settings
 
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -21,7 +22,11 @@ import kotlinx.android.synthetic.main.widget_config.text_size
 
 const val DEFAULT_LIMIT = 20
 const val DEFAULT_SCALE = 5
-val SCALE_VALUES = listOf(5, 10, 15, 30, 60)
+const val DEFAULT_VALUE_TYPE = 1
+
+const val DEFAULT_COLOR_TEMPERATURE = Color.RED
+const val DEFAULT_COLOR_HUMIDITY = Color.CYAN
+const val DEFAULT_COLOR_CO2 = Color.LTGRAY
 
 class GraphWidgetConfig : AbstractConfig(PREF_NAME) {
 
@@ -41,23 +46,24 @@ class GraphWidgetConfig : AbstractConfig(PREF_NAME) {
         show_name.isChecked = prefs.getBoolean(widgetId + "_show_name", true)
         show_temperature.isChecked = prefs.getBoolean(widgetId + "_show_temperature", true)
         temperature_color.setOnClickListener(colorClickListener)
-        temperature_color.color = prefs.getInt(widgetId + "_color_temperature", DEFAULT_TEXT_COLOR)
+        temperature_color.color = prefs.getInt(widgetId + "_color_temperature", DEFAULT_COLOR_TEMPERATURE)
         show_co2.isChecked = prefs.getBoolean(widgetId + "_show_co2", true)
         co2_color.setOnClickListener(colorClickListener)
-        co2_color.color = prefs.getInt(widgetId + "_color_co2", DEFAULT_TEXT_COLOR)
+        co2_color.color = prefs.getInt(widgetId + "_color_co2", DEFAULT_COLOR_CO2)
         show_humidity.isChecked = prefs.getBoolean(widgetId + "_show_humidity", true)
         humidity_color.setOnClickListener(colorClickListener)
-        humidity_color.color = prefs.getInt(widgetId + "_color_humidity", DEFAULT_TEXT_COLOR)
+        humidity_color.color = prefs.getInt(widgetId + "_color_humidity", DEFAULT_COLOR_HUMIDITY)
         limit.setText(prefs.getInt(widgetId + "_limit", DEFAULT_LIMIT).toString())
-        show_latest.isChecked = prefs.getBoolean(widgetId + "_show_latest", true)
+        valuespinner.setSelection(prefs.getInt(widgetId + "_values", DEFAULT_VALUE_TYPE))
 
+        val scaleValues = resources.getIntArray(R.array.graphwidget_scales)
         val adapter = ArrayAdapter(
             this, android.R.layout.simple_spinner_dropdown_item,
-            SCALE_VALUES.map { s -> "$s min" })
+            scaleValues.map { i -> "$i min" })
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         scale.adapter = adapter
         scale.setSelection(
-            SCALE_VALUES.indexOf(prefs.getInt(widgetId + "_scale", DEFAULT_SCALE))
+            scaleValues.indexOf(prefs.getInt(widgetId + "_scale", DEFAULT_SCALE))
         )
     }
 
@@ -100,7 +106,6 @@ class GraphWidgetConfig : AbstractConfig(PREF_NAME) {
             widgetId + "_show_humidity",
             selectedModule?.data_type?.contains("Humidity") ?: false && show_humidity.isChecked
         )
-        edit.putBoolean(widgetId + "_show_latest", show_latest.isChecked)
 
         edit.putInt(widgetId + "_color_temperature", temperature_color.color)
         edit.putInt(widgetId + "_color_co2", co2_color.color)
@@ -112,6 +117,7 @@ class GraphWidgetConfig : AbstractConfig(PREF_NAME) {
             Log.e(TAG, "Given limit value is not a number: $nfe", nfe)
         }
         edit.putInt(widgetId + "_scale", scale.selectedItem.toString().replace(" min", "").toInt())
+        edit.putInt(widgetId + "_values", valuespinner.selectedItemPosition)
         edit.apply()
 
         GraphWidget.updateWidget(this, widgetId.toInt())
