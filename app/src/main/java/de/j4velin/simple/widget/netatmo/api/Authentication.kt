@@ -24,6 +24,11 @@ internal fun getAuthState(context: Context): AuthState {
     }
 }
 
+internal fun peristAuthState(authState: AuthState, context: Context) =
+    context.getSharedPreferences("settings", Context.MODE_PRIVATE).edit()
+        .putString("stateJson", authState.jsonSerializeString())
+        .apply()
+
 internal fun performAuthentication(context: Context, service: AuthorizationService) {
     val authRequest = AuthorizationRequest.Builder(
         AuthorizationServiceConfiguration(
@@ -63,10 +68,7 @@ internal fun retrieveToken(
             onError(errorMsg)
         }
         if (tokenResponse != null) {
-            context.getSharedPreferences("settings", Context.MODE_PRIVATE).edit()
-                .putString("stateJson", authState.jsonSerializeString())
-                .apply()
-            Log.i(TAG, "auth object persisted")
+            peristAuthState(authState, context)
             onSuccess()
         }
     }

@@ -34,7 +34,7 @@ interface NetatmoWeatherApi {
             val service = AuthorizationService(context, false)
             val authState = getAuthState(context)
             return if (authState.isAuthorized) {
-                getTokenAndApi(authState, service, {
+                getTokenAndApi(context, authState, service, {
                     onError(it)
                     service.dispose()
                 }) {
@@ -74,9 +74,11 @@ interface NetatmoWeatherApi {
         }
 
         private fun getTokenAndApi(
-            authState: AuthState, service: AuthorizationService,
+            context: Context, authState: AuthState, service: AuthorizationService,
             onError: (String) -> Unit, onSuccess: (NetatmoWeatherApi) -> Unit
         ) {
+            val tokenBefore = authState.accessToken
+
             authState.performActionWithFreshTokens(service, ClientSecretPost(CLIENT_SECRET))
             { accessToken, _, exception ->
                 if (exception != null) {
@@ -85,6 +87,9 @@ interface NetatmoWeatherApi {
                     onError(errorMsg)
                 }
                 if (accessToken != null) {
+                    if (tokenBefore != authState.accessToken) {
+                        peristAuthState(authState, context)
+                    }
                     onSuccess(getApiWithToken(accessToken))
                 }
             }
