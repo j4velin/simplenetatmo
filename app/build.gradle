@@ -13,8 +13,8 @@ android {
         applicationId "de.j4velin.simple.widget.netatmo"
         minSdkVersion 26
         targetSdkVersion 29
-        versionCode 2
-        versionName "1.0.1"
+        versionCode 3
+        versionName "1.0.2"
 
         buildConfigField("String", "clientId", apiProperties['api.id'])
         buildConfigField("String", "clientSecret", apiProperties['api.secret'])
