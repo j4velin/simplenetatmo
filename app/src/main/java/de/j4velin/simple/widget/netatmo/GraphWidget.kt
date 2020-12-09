@@ -53,7 +53,7 @@ class GraphWidget : AbstractWidget(GraphWidgetConfig.PREF_NAME) {
                             stationId, moduleId, scale.toString() + "min",
                             types.joinToString().replace(" ", ""), date
                         )
-                        if (data.status == "ok") {
+                        if (data.status == "ok" && data.body != null) {
                             val awm = AppWidgetManager.getInstance(context)
                             awm.updateAppWidget(
                                 widgetId, getWidgetView(

@@ -120,10 +120,10 @@ interface NetatmoWeatherApi {
 
     data class ErrorResponse(val message: String, val code: Int)
     data class StationResponse(
-        val body: StationBody, val status: String, val error: ErrorResponse
+        val body: StationBody?, val status: String?, val error: ErrorResponse?
     ) {
         fun getModule(id: String): Module? =
-            body.devices.flatMap { s -> s.allModules }.find { it._id == id }
+            body?.devices?.flatMap { s -> s.allModules }?.find { it._id == id }
     }
 
     data class StationBody(val devices: List<Station>, val user: User)
@@ -160,7 +160,7 @@ interface NetatmoWeatherApi {
     ): MeasurementsResponse
 
     data class MeasurementsResponse(
-        val body: List<Measurements>, val status: String, val error: ErrorResponse
+        val body: List<Measurements>?, val status: String?, val error: ErrorResponse?
     )
 
     data class Measurements(val value: List<List<Number>>)

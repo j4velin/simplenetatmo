@@ -83,7 +83,7 @@ abstract class AbstractConfig(private val prefName: String) : Activity() {
     }
 
     private fun dataReceived(data: NetatmoWeatherApi.StationResponse) {
-        if (data.body.devices.isEmpty()) {
+        if (data.body?.devices?.isEmpty() != false) {
             showErrorDialog(this, getString(R.string.no_stations))
             return
         }
