@@ -69,5 +69,6 @@ class WidgetConfig : AbstractConfig(PREF_NAME) {
 
         edit.apply()
         Widget.updateWidget(this, widgetId.toInt())
+        finish()
     }
 }

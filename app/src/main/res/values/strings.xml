@@ -28,6 +28,7 @@
     <string name="time_between_measurements">Time between measurements:</string>
     <string name="no_stations">Could not find any Netatmo Weather stations associated with your account</string>
     <string name="show_values">Show values:</string>
+    <string name="error_retrieving_stations">"Error retrieving weather stations: %s"</string>
     <string-array name="graphwidget_value_types">
         <item>no values</item>
         <item>latest</item>
