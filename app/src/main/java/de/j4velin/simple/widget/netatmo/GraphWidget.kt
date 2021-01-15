@@ -13,6 +13,7 @@ import com.androidplot.xy.LineAndPointFormatter
 import com.androidplot.xy.NormedXYSeries
 import com.androidplot.xy.SimpleXYSeries
 import com.androidplot.xy.XYPlot
+import de.j4velin.simple.widget.netatmo.api.NetatmoWeatherApi
 import de.j4velin.simple.widget.netatmo.api.NetatmoWeatherApi.Companion.tryGetApi
 import de.j4velin.simple.widget.netatmo.api.TAG
 import de.j4velin.simple.widget.netatmo.settings.*
@@ -53,13 +54,10 @@ class GraphWidget : AbstractWidget(GraphWidgetConfig.PREF_NAME) {
                             stationId, moduleId, scale.toString() + "min",
                             types.joinToString().replace(" ", ""), date
                         )
-                        if (data.status == "ok" && data.body != null) {
+                        if (data.status == "ok") {
                             val awm = AppWidgetManager.getInstance(context)
                             awm.updateAppWidget(
-                                widgetId, getWidgetView(
-                                    widgetId, context, data.body.map { it.value }.flatten(),
-                                    prefs, awm, types
-                                )
+                                widgetId, getWidgetView(widgetId, context, data, prefs, awm, types)
                             )
                         } else {
                             Log.e(TAG, "Received error response: $data")
@@ -72,10 +70,11 @@ class GraphWidget : AbstractWidget(GraphWidgetConfig.PREF_NAME) {
 }
 
 private fun getWidgetView(
-    widgetId: Int, context: Context, measurements: List<List<Number>>,
+    widgetId: Int, context: Context, response: NetatmoWeatherApi.MeasurementsResponse,
     prefs: SharedPreferences, awm: AppWidgetManager, types: List<String>
 ): RemoteViews {
     val widget = widgetId.toString()
+    val measurements = response.body?.map { it.value }?.flatten() ?: emptyList()
     Log.d(TAG, "update widget=$widget, measurements=$measurements")
     val views = RemoteViews(context.packageName, R.layout.graph_widget)
     val openNetatmoApp = PendingIntent.getActivity(
@@ -102,7 +101,10 @@ private fun getWidgetView(
         views.setOnClickPendingIntent(R.id.name, updateWidget)
         views.setTextViewText(
             R.id.name,
-            "${prefs.getString(widget + "_name", "")} - ${timeFormat.format(Date())}"
+            "${prefs.getString(
+                widget + "_name",
+                ""
+            )} - ${timeFormat.format(response.time_server?.toLong() ?: Date())}"
         )
         views.setTextColor(R.id.name, prefs.getInt(widget + "_text_color", DEFAULT_TEXT_COLOR))
         views.setFloat(R.id.name, "setTextSize", textSize)
@@ -112,7 +114,7 @@ private fun getWidgetView(
     }
 
     val valueType = prefs.getInt(widget + "_values", DEFAULT_VALUE_TYPE)
-    if (valueType > 0) {
+    if (valueType > 0 && measurements.isNotEmpty()) {
         var index = 0
 
         if (types.contains("temperature")) {

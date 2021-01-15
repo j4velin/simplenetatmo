@@ -160,7 +160,10 @@ interface NetatmoWeatherApi {
     ): MeasurementsResponse
 
     data class MeasurementsResponse(
-        val body: List<Measurements>?, val status: String?, val error: ErrorResponse?
+        val body: List<Measurements>?,
+        val status: String?,
+        val error: ErrorResponse?,
+        val time_server: String?
     )
 
     data class Measurements(val value: List<List<Number>>)
