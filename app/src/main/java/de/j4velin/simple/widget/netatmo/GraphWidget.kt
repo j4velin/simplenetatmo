@@ -104,7 +104,7 @@ private fun getWidgetView(
             "${prefs.getString(
                 widget + "_name",
                 ""
-            )} - ${timeFormat.format(response.time_server?.toLong() ?: Date())}"
+            )} - ${timeFormat.format(response.time_server?.toLong()?.times(1000) ?: Date())}"
         )
         views.setTextColor(R.id.name, prefs.getInt(widget + "_text_color", DEFAULT_TEXT_COLOR))
         views.setFloat(R.id.name, "setTextSize", textSize)
