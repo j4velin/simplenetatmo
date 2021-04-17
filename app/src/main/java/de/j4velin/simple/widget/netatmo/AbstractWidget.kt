@@ -18,15 +18,16 @@ abstract class AbstractWidget(private val prefName: String) : AppWidgetProvider(
         super.onDeleted(context, widgetIds)
         if (context != null && widgetIds != null) {
             val prefs = context.getSharedPreferences(prefName, Context.MODE_PRIVATE)
-            val edit = prefs.edit()
-            for (widgetId in widgetIds) {
-                for (key in prefs.all.keys) {
-                    if (key.startsWith(widgetId.toString() + "_")) {
-                        edit.remove(key)
-                    }
+            prefs.edit().apply {
+                prefs.all.keys.filter {
+                    widgetIds.contains(
+                        it.substringBefore('_').toIntOrNull() ?: -1
+                    )
+                }.forEach {
+                    remove(it)
                 }
+                apply()
             }
-            edit.apply()
         }
     }
 

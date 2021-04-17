@@ -67,51 +67,59 @@ class GraphWidgetConfig : AbstractConfig(PREF_NAME) {
     fun save(view: View) {
         saveGeneralSettings()
 
-        val edit = prefs.edit()
-        if (selectedModule == null || selectedStation == null) {
-            Toast.makeText(this, R.string.no_module_selected, Toast.LENGTH_LONG).show()
-            return
-        } else {
-            selectedModule?.let {
-                edit.putString(widgetId + "_module_id", it._id)
-                edit.putString(widgetId + "_name", it.module_name)
+        prefs.edit().apply {
+            if (selectedModule == null || selectedStation == null) {
+                Toast.makeText(
+                    this@GraphWidgetConfig,
+                    R.string.no_module_selected,
+                    Toast.LENGTH_LONG
+                ).show()
+                return@save
+            } else {
+                selectedModule?.let {
+                    putString(widgetId + "_module_id", it._id)
+                    putString(widgetId + "_name", it.module_name)
+                }
+                selectedStation?.let { putString(widgetId + "_station_id", it._id) }
             }
-            selectedStation?.let { edit.putString(widgetId + "_station_id", it._id) }
-        }
-        edit.putInt(widgetId + "_background_color", background_color.color)
-        edit.putInt(widgetId + "_text_color", text_color.color)
-        try {
-            edit.putFloat(widgetId + "_text_size", text_size.text.toString().toFloat())
-        } catch (nfe: NumberFormatException) {
-            Log.e(TAG, "Given text.size value is not a number: $nfe", nfe)
-        }
-        edit.putBoolean(widgetId + "_show_name", show_name.isChecked)
-        edit.putBoolean(
-            widgetId + "_show_temperature",
-            selectedModule?.data_type?.contains("Temperature") ?: false && show_temperature.isChecked
-        )
-        edit.putBoolean(
-            widgetId + "_show_co2",
-            selectedModule?.data_type?.contains("CO2") ?: false && show_co2.isChecked
-        )
-        edit.putBoolean(
-            widgetId + "_show_humidity",
-            selectedModule?.data_type?.contains("Humidity") ?: false && show_humidity.isChecked
-        )
+            putInt(widgetId + "_background_color", background_color.color)
+            putInt(widgetId + "_text_color", text_color.color)
+            try {
+                putFloat(widgetId + "_text_size", text_size.text.toString().toFloat())
+            } catch (nfe: NumberFormatException) {
+                Log.e(TAG, "Given text.size value is not a number: $nfe", nfe)
+            }
+            putBoolean(widgetId + "_show_name", show_name.isChecked)
+            putBoolean(
+                widgetId + "_show_temperature",
+                selectedModule?.data_type?.contains("Temperature") ?: false && show_temperature.isChecked
+            )
+            putBoolean(
+                widgetId + "_show_co2",
+                selectedModule?.data_type?.contains("CO2") ?: false && show_co2.isChecked
+            )
+            putBoolean(
+                widgetId + "_show_humidity",
+                selectedModule?.data_type?.contains("Humidity") ?: false && show_humidity.isChecked
+            )
 
-        edit.putInt(widgetId + "_color_temperature", temperature_color.color)
-        edit.putInt(widgetId + "_color_co2", co2_color.color)
-        edit.putInt(widgetId + "_color_humidity", humidity_color.color)
+            putInt(widgetId + "_color_temperature", temperature_color.color)
+            putInt(widgetId + "_color_co2", co2_color.color)
+            putInt(widgetId + "_color_humidity", humidity_color.color)
 
-        try {
-            edit.putInt(widgetId + "_limit", limit.text.toString().toInt())
-        } catch (nfe: NumberFormatException) {
-            Log.e(TAG, "Given limit value is not a number: $nfe", nfe)
+            try {
+                putInt(widgetId + "_limit", limit.text.toString().toInt())
+            } catch (nfe: NumberFormatException) {
+                Log.e(TAG, "Given limit value is not a number: $nfe", nfe)
+            }
+            putInt(
+                widgetId + "_scale",
+                scale.selectedItem.toString().replace(" min", "").toInt()
+            )
+            putInt(widgetId + "_values", valuespinner.selectedItemPosition)
+
+            apply()
         }
-        edit.putInt(widgetId + "_scale", scale.selectedItem.toString().replace(" min", "").toInt())
-        edit.putInt(widgetId + "_values", valuespinner.selectedItemPosition)
-
-        edit.apply()
         GraphWidget.updateWidget(this, widgetId.toInt())
         finish()
     }

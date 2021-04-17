@@ -44,30 +44,32 @@ class WidgetConfig : AbstractConfig(PREF_NAME) {
     fun save(view: View) {
         saveGeneralSettings()
 
-        val edit = prefs.edit()
-        if (selectedModule == null) {
-            Toast.makeText(this, R.string.no_module_selected, Toast.LENGTH_LONG).show()
-            return
-        } else {
-            selectedModule?.let {
-                edit.putString(widgetId + "_module_id", it._id)
-                edit.putString(widgetId + "_name", it.module_name)
+        prefs.edit().apply {
+            if (selectedModule == null) {
+                Toast.makeText(this@WidgetConfig, R.string.no_module_selected, Toast.LENGTH_LONG)
+                    .show()
+                return@save
+            } else {
+                selectedModule?.let {
+                    putString(widgetId + "_module_id", it._id)
+                    putString(widgetId + "_name", it.module_name)
+                }
             }
-        }
-        edit.putInt(widgetId + "_background_color", background_color.color)
-        edit.putInt(widgetId + "_text_color", text_color.color)
-        try {
-            edit.putFloat(widgetId + "_text_size", text_size.text.toString().toFloat())
-        } catch (nfe: NumberFormatException) {
-            Log.e(TAG, "Given text.size value is not a number: $nfe", nfe)
-        }
-        edit.putBoolean(widgetId + "_show_icons", show_icons.isChecked)
-        edit.putBoolean(widgetId + "_show_name", show_name.isChecked)
-        edit.putBoolean(widgetId + "_show_temperature", show_temperature.isChecked)
-        edit.putBoolean(widgetId + "_show_co2", show_co2.isChecked)
-        edit.putBoolean(widgetId + "_show_humidity", show_humidity.isChecked)
+            putInt(widgetId + "_background_color", background_color.color)
+            putInt(widgetId + "_text_color", text_color.color)
+            try {
+                putFloat(widgetId + "_text_size", text_size.text.toString().toFloat())
+            } catch (nfe: NumberFormatException) {
+                Log.e(TAG, "Given text.size value is not a number: $nfe", nfe)
+            }
+            putBoolean(widgetId + "_show_icons", show_icons.isChecked)
+            putBoolean(widgetId + "_show_name", show_name.isChecked)
+            putBoolean(widgetId + "_show_temperature", show_temperature.isChecked)
+            putBoolean(widgetId + "_show_co2", show_co2.isChecked)
+            putBoolean(widgetId + "_show_humidity", show_humidity.isChecked)
 
-        edit.apply()
+            apply()
+        }
         Widget.updateWidget(this, widgetId.toInt())
         finish()
     }
