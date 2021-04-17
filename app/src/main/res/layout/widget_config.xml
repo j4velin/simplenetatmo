@@ -9,16 +9,7 @@
         android:layout_margin="10dp"
         android:orientation="vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/module" />
-
-        <Spinner
-            android:id="@+id/modules"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp" />
+        <include layout="@layout/module_config" />
 
         <CheckBox
             android:id="@+id/show_temperature"
@@ -83,25 +74,6 @@
                     android:layout_height="wrap_content"
                     android:inputType="numberDecimal" />
             </TableRow>
-
-            <TableRow android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/refresh_time" />
-
-                <EditText
-                    android:id="@+id/interval"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:inputType="numberSigned" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/minutes" />
-            </TableRow>
         </TableLayout>
 
         <CheckBox
@@ -116,19 +88,7 @@
             android:layout_height="wrap_content"
             android:text="@string/show_name" />
 
-        <TextView
-            style="?android:attr/listSeparatorTextViewStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="@string/global_settings" />
-
-        <CheckBox
-            android:id="@+id/onlywifi"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="@string/only_wifi" />
+        <include layout="@layout/global_config" />
 
         <Button
             android:id="@+id/save"

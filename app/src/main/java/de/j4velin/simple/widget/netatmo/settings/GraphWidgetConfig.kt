@@ -47,7 +47,6 @@ class GraphWidgetConfig : AbstractConfig(PREF_NAME) {
         humidity_color.color = prefs.getInt(widgetId + "_color_humidity", DEFAULT_COLOR_HUMIDITY)
         limit.setText(prefs.getInt(widgetId + "_limit", DEFAULT_LIMIT).toString())
         valuespinner.setSelection(prefs.getInt(widgetId + "_values", DEFAULT_VALUE_TYPE))
-        interval.setText(prefs.getInt(widgetId + "_interval", DEFAULT_INTERVAL).toString())
 
         val scaleValues = resources.getIntArray(R.array.graphwidget_scales)
         val adapter = ArrayAdapter(
@@ -111,11 +110,6 @@ class GraphWidgetConfig : AbstractConfig(PREF_NAME) {
         }
         edit.putInt(widgetId + "_scale", scale.selectedItem.toString().replace(" min", "").toInt())
         edit.putInt(widgetId + "_values", valuespinner.selectedItemPosition)
-        try {
-            edit.putInt(widgetId + "_interval", interval.text.toString().toInt())
-        } catch (nfe: NumberFormatException) {
-            Log.e(TAG, "Given interval value is not a number: $nfe", nfe)
-        }
 
         edit.apply()
         GraphWidget.updateWidget(this, widgetId.toInt())

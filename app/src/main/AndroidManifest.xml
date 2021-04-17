@@ -16,7 +16,6 @@
             android:name=".Widget"
             android:label="@string/widget_type_last">
             <intent-filter>
-                <action android:name="de.j4velin.simple.widget.netatmo.UPDATE" />
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
             </intent-filter>
@@ -29,7 +28,6 @@
             android:name=".GraphWidget"
             android:label="@string/widget_type_graph">
             <intent-filter>
-                <action android:name="de.j4velin.simple.widget.netatmo.UPDATE" />
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE_OPTIONS" />

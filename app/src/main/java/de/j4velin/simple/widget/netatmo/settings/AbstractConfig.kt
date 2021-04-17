@@ -16,9 +16,14 @@ import de.j4velin.lib.colorpicker.ColorPreviewButton
 import de.j4velin.simple.widget.netatmo.R
 import de.j4velin.simple.widget.netatmo.api.NetatmoWeatherApi
 import de.j4velin.simple.widget.netatmo.api.TAG
+import de.j4velin.simple.widget.netatmo.setNextAlarm
+import kotlinx.android.synthetic.main.global_config.*
+import kotlinx.android.synthetic.main.module_config.*
 import kotlinx.android.synthetic.main.widget_config.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+
+const val DEFAULT_INTERVAL = 30
 
 abstract class AbstractConfig(private val prefName: String) : Activity() {
 
@@ -77,8 +82,9 @@ abstract class AbstractConfig(private val prefName: String) : Activity() {
             startActivity(Intent(this, MainActivity::class.java))
             finish()
         } else {
-            onlywifi.isChecked =
-                getSharedPreferences("settings", Context.MODE_PRIVATE).getBoolean("only_wifi", true)
+            val prefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
+            onlywifi.isChecked = prefs.getBoolean("only_wifi", true)
+            interval.setText(prefs.getInt("interval", DEFAULT_INTERVAL).toString())
         }
     }
 
@@ -133,11 +139,20 @@ abstract class AbstractConfig(private val prefName: String) : Activity() {
     }
 
     protected fun saveGeneralSettings() {
-        getSharedPreferences("settings", Context.MODE_PRIVATE).edit()
-            .putBoolean("only_wifi", onlywifi.isChecked).apply()
+        val prefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        prefs.edit().apply {
+            try {
+                putInt("interval", interval.text.toString().toInt())
+            } catch (nfe: NumberFormatException) {
+                Log.e(TAG, "Given interval value is not a number: $nfe", nfe)
+            }
+            putBoolean("only_wifi", onlywifi.isChecked)
+            apply()
+        }
 
         val resultValue = Intent()
         resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId.toInt())
         setResult(RESULT_OK, resultValue)
+        setNextAlarm(this)
     }
 }

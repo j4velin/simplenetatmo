@@ -23,11 +23,13 @@ class Widget : AbstractWidget(WidgetConfig.PREF_NAME) {
 
     override fun updateWidgets(
         context: Context, widgetManager: AppWidgetManager, widgetIds: IntArray
-    ) = Widget.updateAllWidgets(context, widgetManager, widgetIds)
+    ) = Companion.updateWidgets(context, widgetManager, *widgetIds)
 
     companion object {
-        internal fun updateAllWidgets(
-            context: Context, widgetManager: AppWidgetManager, widgetIds: IntArray
+        internal fun updateWidgets(
+            context: Context,
+            widgetManager: AppWidgetManager,
+            vararg widgetIds: Int
         ) {
             tryGetApi(context) {
                 GlobalScope.launch {
@@ -56,24 +58,8 @@ class Widget : AbstractWidget(WidgetConfig.PREF_NAME) {
             }
         }
 
-        internal fun updateWidget(context: Context, widgetId: Int) {
-            tryGetApi(context) {
-                GlobalScope.launch {
-                    val data = it.getStations()
-                    val prefs =
-                        context.getSharedPreferences(WidgetConfig.PREF_NAME, Context.MODE_PRIVATE)
-                    val moduleId = prefs.getString(widgetId.toString() + "_module_id", null)
-                    val module = moduleId?.let { data.getModule(it) }
-                    if (module != null) {
-                        AppWidgetManager.getInstance(context).updateAppWidget(
-                            widgetId, getWidgetView(widgetId, context, module, prefs)
-                        )
-                    } else {
-                        Log.e(TAG, "No module found for id=$moduleId, widget=$widgetId")
-                    }
-                }
-            }
-        }
+        internal fun updateWidget(context: Context, widgetId: Int) =
+            updateWidgets(context, AppWidgetManager.getInstance(context), widgetId)
     }
 }
 
