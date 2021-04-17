@@ -13,6 +13,7 @@ import kotlinx.android.synthetic.main.widget_config.*
 const val DEFAULT_BG_COLOR = 1694498816
 const val DEFAULT_TEXT_COLOR = Color.WHITE
 const val DEFAULT_TEXT_SIZE = 12f
+const val DEFAULT_INTERVAL = 30
 
 class WidgetConfig : AbstractConfig(PREF_NAME) {
 
@@ -34,6 +35,7 @@ class WidgetConfig : AbstractConfig(PREF_NAME) {
         show_temperature.isChecked = prefs.getBoolean(widgetId + "_show_temperature", true)
         show_co2.isChecked = prefs.getBoolean(widgetId + "_show_co2", true)
         show_humidity.isChecked = prefs.getBoolean(widgetId + "_show_humidity", true)
+        interval.setText(prefs.getInt(widgetId + "_interval", DEFAULT_INTERVAL).toString())
     }
 
     override fun onPause() {
@@ -66,6 +68,11 @@ class WidgetConfig : AbstractConfig(PREF_NAME) {
         edit.putBoolean(widgetId + "_show_temperature", show_temperature.isChecked)
         edit.putBoolean(widgetId + "_show_co2", show_co2.isChecked)
         edit.putBoolean(widgetId + "_show_humidity", show_humidity.isChecked)
+        try {
+            edit.putInt(widgetId + "_interval", interval.text.toString().toInt())
+        } catch (nfe: NumberFormatException) {
+            Log.e(TAG, "Given interval value is not a number: $nfe", nfe)
+        }
 
         edit.apply()
         Widget.updateWidget(this, widgetId.toInt())

@@ -10,15 +10,6 @@ import de.j4velin.simple.widget.netatmo.GraphWidget
 import de.j4velin.simple.widget.netatmo.R
 import de.j4velin.simple.widget.netatmo.api.TAG
 import kotlinx.android.synthetic.main.graph_widget_config.*
-import kotlinx.android.synthetic.main.graph_widget_config.save
-import kotlinx.android.synthetic.main.widget_config.*
-import kotlinx.android.synthetic.main.widget_config.background_color
-import kotlinx.android.synthetic.main.widget_config.show_co2
-import kotlinx.android.synthetic.main.widget_config.show_humidity
-import kotlinx.android.synthetic.main.widget_config.show_name
-import kotlinx.android.synthetic.main.widget_config.show_temperature
-import kotlinx.android.synthetic.main.widget_config.text_color
-import kotlinx.android.synthetic.main.widget_config.text_size
 
 const val DEFAULT_LIMIT = 20
 const val DEFAULT_SCALE = 5
@@ -46,7 +37,8 @@ class GraphWidgetConfig : AbstractConfig(PREF_NAME) {
         show_name.isChecked = prefs.getBoolean(widgetId + "_show_name", true)
         show_temperature.isChecked = prefs.getBoolean(widgetId + "_show_temperature", true)
         temperature_color.setOnClickListener(colorClickListener)
-        temperature_color.color = prefs.getInt(widgetId + "_color_temperature", DEFAULT_COLOR_TEMPERATURE)
+        temperature_color.color =
+            prefs.getInt(widgetId + "_color_temperature", DEFAULT_COLOR_TEMPERATURE)
         show_co2.isChecked = prefs.getBoolean(widgetId + "_show_co2", true)
         co2_color.setOnClickListener(colorClickListener)
         co2_color.color = prefs.getInt(widgetId + "_color_co2", DEFAULT_COLOR_CO2)
@@ -55,6 +47,7 @@ class GraphWidgetConfig : AbstractConfig(PREF_NAME) {
         humidity_color.color = prefs.getInt(widgetId + "_color_humidity", DEFAULT_COLOR_HUMIDITY)
         limit.setText(prefs.getInt(widgetId + "_limit", DEFAULT_LIMIT).toString())
         valuespinner.setSelection(prefs.getInt(widgetId + "_values", DEFAULT_VALUE_TYPE))
+        interval.setText(prefs.getInt(widgetId + "_interval", DEFAULT_INTERVAL).toString())
 
         val scaleValues = resources.getIntArray(R.array.graphwidget_scales)
         val adapter = ArrayAdapter(
@@ -118,8 +111,13 @@ class GraphWidgetConfig : AbstractConfig(PREF_NAME) {
         }
         edit.putInt(widgetId + "_scale", scale.selectedItem.toString().replace(" min", "").toInt())
         edit.putInt(widgetId + "_values", valuespinner.selectedItemPosition)
-        edit.apply()
+        try {
+            edit.putInt(widgetId + "_interval", interval.text.toString().toInt())
+        } catch (nfe: NumberFormatException) {
+            Log.e(TAG, "Given interval value is not a number: $nfe", nfe)
+        }
 
+        edit.apply()
         GraphWidget.updateWidget(this, widgetId.toInt())
         finish()
     }

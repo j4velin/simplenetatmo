@@ -24,7 +24,7 @@ import kotlin.Comparator
 
 class GraphWidget : AbstractWidget(GraphWidgetConfig.PREF_NAME) {
 
-    override fun updateAllWidgets(
+    override fun updateWidgets(
         context: Context, widgetManager: AppWidgetManager, widgetIds: IntArray
     ) {
         Log.d(TAG, "updating graphwidgets ${widgetIds.asList()}")

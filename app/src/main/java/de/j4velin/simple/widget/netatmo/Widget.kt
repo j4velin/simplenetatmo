@@ -21,7 +21,7 @@ import java.util.*
 
 class Widget : AbstractWidget(WidgetConfig.PREF_NAME) {
 
-    override fun updateAllWidgets(
+    override fun updateWidgets(
         context: Context, widgetManager: AppWidgetManager, widgetIds: IntArray
     ) = Widget.updateAllWidgets(context, widgetManager, widgetIds)
 

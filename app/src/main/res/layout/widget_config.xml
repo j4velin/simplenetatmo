@@ -83,6 +83,25 @@
                     android:layout_height="wrap_content"
                     android:inputType="numberDecimal" />
             </TableRow>
+
+            <TableRow android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/refresh_time" />
+
+                <EditText
+                    android:id="@+id/interval"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberSigned" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/minutes" />
+            </TableRow>
         </TableLayout>
 
         <CheckBox
