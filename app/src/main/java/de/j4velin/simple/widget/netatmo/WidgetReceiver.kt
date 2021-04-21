@@ -7,6 +7,8 @@ import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.util.Log
 import de.j4velin.simple.widget.netatmo.api.TAG
 import de.j4velin.simple.widget.netatmo.settings.DEFAULT_INTERVAL
@@ -14,6 +16,8 @@ import de.j4velin.simple.widget.netatmo.settings.DEFAULT_INTERVAL
 internal const val ACTION_UPDATE_WIDGETS = "UPDATE_WIDGETS"
 internal const val ACTION_UPDATE_GRAPH_WIDGET = "UPDATE_GRAPH_WIDGET"
 internal const val EXTRA_KEY_WIDGET_ID = "widgetId"
+private const val EXTRA_REASON = "reason"
+private const val REASON_TIMER = "timer"
 
 class WidgetReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -22,13 +26,17 @@ class WidgetReceiver : BroadcastReceiver() {
         }
         val awm = AppWidgetManager.getInstance(context)
         if (intent?.action?.equals(ACTION_UPDATE_WIDGETS) == true) {
+            setNextAlarm(context)
+            if (intent.getStringExtra(EXTRA_REASON) == REASON_TIMER && !shouldUpdate(context)) {
+                Log.i(TAG, "Skipping timed update due to network restrictions")
+                return
+            }
             Widget.updateWidgets(
                 context, awm, *awm.getAppWidgetIds(ComponentName(context, Widget::class.java))
             )
             awm.getAppWidgetIds(ComponentName(context, GraphWidget::class.java)).forEach {
                 GraphWidget.updateWidget(context, it)
             }
-            setNextAlarm(context)
         } else if (intent?.action?.equals(ACTION_UPDATE_GRAPH_WIDGET) == true) {
             if (intent.hasExtra(EXTRA_KEY_WIDGET_ID)) {
                 GraphWidget.updateWidget(context, intent.extras!!.getInt(EXTRA_KEY_WIDGET_ID))
@@ -37,6 +45,28 @@ class WidgetReceiver : BroadcastReceiver() {
     }
 }
 
+/**
+ * @param context the context
+ * @return false, if updating the widgets should be skipped (for example due to network restrictions)
+ */
+private fun shouldUpdate(context: Context): Boolean {
+    val connManager =
+        context.applicationContext.getSystemService(ConnectivityManager::class.java)
+    return connManager?.activeNetwork?.let {
+        val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        return if (prefs.getBoolean("only_wifi", true)) {
+            connManager.getNetworkCapabilities(it)
+                ?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ?: true
+        } else {
+            true
+        }
+    } ?: false
+}
+
+/**
+ * Sets an alarm for the next scheduled widget update
+ * @param context the context
+ */
 internal fun setNextAlarm(context: Context) {
     val alarmManager = context.getSystemService(AlarmManager::class.java)
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
@@ -46,7 +76,9 @@ internal fun setNextAlarm(context: Context) {
         AlarmManager.RTC, nextUpdate,
         PendingIntent.getBroadcast(
             context, 1,
-            Intent(context, WidgetReceiver::class.java).setAction(ACTION_UPDATE_WIDGETS),
+            Intent(context, WidgetReceiver::class.java).setAction(ACTION_UPDATE_WIDGETS).putExtra(
+                EXTRA_REASON, REASON_TIMER
+            ),
             PendingIntent.FLAG_UPDATE_CURRENT
         )
     )

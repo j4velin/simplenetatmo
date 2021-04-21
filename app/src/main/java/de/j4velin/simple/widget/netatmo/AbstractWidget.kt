@@ -37,23 +37,7 @@ abstract class AbstractWidget(private val prefName: String) : AppWidgetProvider(
         super.onUpdate(context, widgetManager, widgetIds)
         if (context != null && widgetManager != null && widgetIds != null) {
             setNextAlarm(context)
-            val connManager =
-                context.applicationContext.getSystemService(ConnectivityManager::class.java)
-            val activeNetwork = connManager?.activeNetwork
-            if (activeNetwork != null) {
-                val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-                if (prefs.getBoolean("only_wifi", true)) {
-                    val wifi = connManager.getNetworkCapabilities(activeNetwork)
-                        ?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ?: true
-                    if (!wifi) {
-                        Log.i(TAG, "No WiFi connection -> don't update widgets")
-                        return
-                    }
-                }
-                updateWidgets(context, widgetManager, widgetIds)
-            } else {
-                Log.w(TAG, "No network connection")
-            }
+            updateWidgets(context, widgetManager, widgetIds)
         } else {
             Log.e(TAG, "Parameter is null!")
         }
