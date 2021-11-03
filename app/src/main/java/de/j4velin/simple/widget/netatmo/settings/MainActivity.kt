@@ -20,6 +20,7 @@ import kotlinx.android.synthetic.main.main.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import net.openid.appauth.AuthorizationService
+import retrofit2.HttpException
 
 internal const val NOTIFICATION_CHANNEL_ERRORS = "errors"
 
@@ -54,12 +55,24 @@ class MainActivity : Activity() {
             NetatmoWeatherApi.getApi(this, { showError(getString(R.string.auth_error, it)) })
             {
                 GlobalScope.launch {
-                    val devices = it.getStations().body?.devices
-                    runOnUiThread {
-                        if (devices == null || devices.isEmpty()) {
-                            showError(getString(R.string.no_stations))
-                        } else {
-                            setupComplete(devices)
+                    try {
+                        val devices = it.getStations().body?.devices
+                        runOnUiThread {
+                            if (devices == null || devices.isEmpty()) {
+                                showError(getString(R.string.no_stations))
+                            } else {
+                                setupComplete(devices)
+                            }
+                        }
+                    } catch (e: HttpException) {
+                        runOnUiThread {
+                            showError(
+                                if (e.code() == 403) {
+                                    getString(R.string.setup_need_auth)
+                                } else {
+                                    e.message ?: e.toString()
+                                }
+                            )
                         }
                     }
                 }
